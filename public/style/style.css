@@ -1,0 +1,166 @@
+* {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+}
+
+html,
+body {
+   height: 100%;
+   width: 100%;
+   font-family: sans-serif !important;
+
+}
+
+a {
+   color: blue;
+} 
+.title {
+   font-size: 1.5rem;
+   font-weight: 700;
+   font-size: 4rem;
+   text-align: center;
+   margin-bottom: 20px;
+}
+
+.main .container {
+   position: relative;
+   margin-left: auto;
+   margin-right: auto;
+   margin-top: 60px;
+}
+
+
+form {
+   width: 80vw;
+   margin: 0 auto;
+   display: grid;
+   place-items: center;
+   gap: 15px;
+
+}
+
+.form-box {
+   width: 80%;
+   position: relative;
+}
+
+
+
+form div input {
+   width: 100%;
+   height: 50px;
+   border-radius: 8px;
+   outline: none;
+   border: 2px solid gray;
+   padding: 0 30px;
+   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+form div select {
+   width: 100%;
+   height: 50px;
+   border-radius: 8px;
+   outline: none;
+   border: 2px solid gray;
+   padding: 0 30px;
+   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+form div input::placeholder {
+   font-size: 1rem;
+}
+
+label {
+   display: block;
+   font-size: 1.5rem;
+   margin-bottom: 5px;
+   letter-spacing: 1;
+}
+
+input:focus {
+   border: 2px solid skyblue;
+}
+
+.required {
+   color: red;
+}
+
+.btn {
+   display: flex;
+   flex-direction: row;
+   justify-content: space-between;
+   gap: 15px;
+}
+
+
+.btn-group {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   gap: 1rem;
+   margin-top: 15px;
+   color: #fff;
+   font-weight: 600;
+   font-size: 1rem;
+}
+
+.submit-btn {
+   background-color: rgba(6, 115, 211, 0.89);
+   cursor: pointer;
+   color: inherit;
+   font-size: 20px;
+   border: 0;
+   outline: 0;
+}
+
+.reset-btn {
+   background-color: rgba(198, 23, 23, 0.822);
+   color: inherit;
+   font-size: 20px;
+   border: 0;
+   outline: 0;
+   cursor: pointer;
+}
+
+.error {
+   color: red;
+   font-size: 14.5px;
+   margin-top: 5px;
+}
+
+.error-message {
+   color: red;
+   font-size: 14px;
+   margin-top: 4px;
+   position: absolute;
+   bottom: -17px;
+   left: 10px;
+}
+
+
+
+.redirect_link {
+   font-size: 18px;
+   padding: 10px 0;
+}
+
+.redirect_link a {
+   color: rgba(6, 115, 211, 0.89);
+   text-transform: capitalize;
+   text-decoration: none;
+}
+
+.alert {
+   font-size: 17px;
+   font-weight: 600;
+   margin: 10px auto 0;
+   border-radius: 10px;
+   position: fixed;
+   top: 55px;
+   left: 50%;
+   transform: translateX(-50%);
+   transition: transform 1s ease;
+   z-index: 12;
+   width: 50%;
+} 
+ 
