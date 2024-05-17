@@ -14,7 +14,8 @@ class UserModel extends Model
         'MobileNumber',
         'Password',
         'Token',
-        'Verified'
+        'Verified',
+        'date_time',
     ];
     // public function saveToken($data)
     // { 

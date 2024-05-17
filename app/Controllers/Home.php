@@ -16,21 +16,29 @@ class Home extends BaseController
     {
         return view('/pages/registration');
     }
-    public function authenticateUserPage(string $token): string
+
+    //Error page ---------->
+    public function errPage()
     {
-        // $userModel = new UserModel();
-        $session = session();
-        $userEmail = $session->get('userEmail');
-        // $dbToken = $session->get('token');
-        // $data = $userModel->where('Token', $dbToken)->first();
-        // if ($data) {
-        //     return view('index');
-        // }
-
-        return view('/pages/auth-user-page', ['userEmail' => $userEmail]);
+        return view('/pages/error-page');
     }
-    //profile page view--------- 
 
+    // auth page----------> 
+    public function authenticateUserPage(string $token)
+    {
+        $userModel = new UserModel();
+
+        $uri = service('uri');
+        $code = $uri->getSegment(2);
+        $data = $userModel->where('Token', $code)->first();
+        if (empty($data['Token'])) {
+            return redirect('error')->with('status', 'This link is expired');
+        }
+
+        return view('/pages/auth-user-page', ['code' => $code]);
+    }
+
+    //profile page view--------- 
     public function profile()
     {
         $session = session();
@@ -49,25 +57,17 @@ class Home extends BaseController
         } else {
             return redirect()->to('/');
         }
-    }
-    // not working ----
+    } 
 
-    //dota store in db---------
-
+    //data store in db---------
     public function storeData()
     {
-        $session = session();
-
+        date_default_timezone_set('Asia/Kolkata');
+        $currentDateTime = date("Y/m/d/h:i:sa"); 
+        $session = session(); 
         $token = uniqid();
-        $session->set('token', $token);
-
-
-        $userModel = new UserModel();
-        $EmailVerificationKey = mt_rand(10000, 99999);
-        $session->set('EmailVerificationKey', $EmailVerificationKey);
-        // $setToken = $session->get('token');
-
-
+        $session->set('token', $token); 
+        $userModel = new UserModel(); 
         $userData = [
             'FirstName' => $this->request->getPost('name'),
             'LastName' => $this->request->getPost('lastname'),
@@ -76,6 +76,7 @@ class Home extends BaseController
             'Password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
             'Verified' => 0,
             'Token' => $token,
+            'date_time' => $currentDateTime,
         ];
         $userEmail = $this->request->getPost('email');
         $session->set('userEmail', $userEmail);
@@ -93,36 +94,26 @@ class Home extends BaseController
 
         $email->setSubject('Account Verification');
         $email->setMessage("
-        <div >
-        <div style=' padding: 10px;'>
-            Please verify your account
+        <div style='max-width: 600px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);'>
+            <h2>Email Activation</h2>
+            <p>Thank you for registering with us. Please click the button below to activate your account:</p>
+            <a href='" . base_url('authentication/' . $token) . "' style='display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; margin-top: 20px;'>Activate Account</a>
+            <p style='margin-top: 20px;'>If you received this email by mistake, please ignore it.</p>
         </div>
-        <div style=' padding: 10px;'>
-            <a href='" . base_url('home/authenticateUserPage/' . $token) . "' style='display: inline-block; padding: 10px 20px; color: #ffffff; background-color: #007bff; border-radius: 5px; text-decoration: none;'>Click Here</a>
-        </div>
-        <div class='text-primary ' style='padding: 10px;'>verification code: $EmailVerificationKey</div>
-        </div>
-        ");
+    ");
 
         $email->send();
 
 
         $userModel->save($userData);
-        return redirect('/')->with('status', 'We have sand verification email to your email id');
+        return redirect('/')->with('status', 'We have sand an activation email to your email address');
     }
 
     //authendicate user---------
 
     public function loginAuth()
-    {
-        // $prefix = 'token_';
-        // $token = uniqid($prefix);
-        // echo $token;
-        // exit;
-        $session = session();
-
-
-
+    { 
+        $session = session();  
         $userModel = new UserModel();
         $email = $this->request->getPost('email');
         $password = $this->request->getPost('password');
@@ -179,34 +170,25 @@ class Home extends BaseController
         }
     }
 
+    // authenticate user for url------------
     public function authUser()
     {
-        $session = session();
-        $emailVerificationKey = $session->get('EmailVerificationKey');
-
-
+        $uri = service('uri');
+        $code = $uri->getSegment(2);
+        echo $code;
         $userModel = new UserModel();
-        $email = $this->request->getPost('authemail');
-        $authUser = $this->request->getPost('authCode');
-        $data = $userModel->where('Email', $email)->first();
-
-
-        if ($email && $authUser == $emailVerificationKey) {
-            if ($data) {
-                $data['Verified'] = 1;
-                $userModel->verificationStatus($data);
-                return redirect('/')->with('status', 'Authentication Successful');
-            } else {
-                return redirect('/')->with('status', 'Failed to login, Please re-register');
-
-            }
+        $data = $userModel->where('Token', $code)->first();
+        if ($data && $data['Token'] == $code) {
+            $userModel->update($data['UserID'], [
+                'Verified' => 1,
+                'Token' => ''
+            ]);
+            return redirect('error')->with('status', 'Activation Successful');
+        } else if (!$data) {
+            return redirect('/')->with('status', 'Your account is already activated.');
         } else {
-            if ($data) {
-                $userModel->deleteUserByEmailInAuthPage($email);
-                return redirect('/')->with('status', 'Failed to login, Please re-register');
-            } else {
-                return redirect('/')->with('status', 'Failed to login, Please try again');
-            }
+            return redirect('error')->with('status', 'Something went wrong, please try-again.');
+
         }
     }
 
