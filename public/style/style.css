@@ -164,3 +164,7 @@ input:focus {
    width: 50%;
 } 
  
+form#modelForm{
+   width: auto;
+   place-items: normal;
+}

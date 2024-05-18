@@ -41,14 +41,25 @@ class Home extends BaseController
     //profile page view--------- 
     public function profile()
     {
+        $userModel = new UserModel();
         $session = session();
+        $userID = $session->get('UserID');
+        $user = $userModel->where('UserID', $userID)->first();
+        // echo $userID;
+        // print_r($user);
+        // exit;
         if ($session->has('isLoggedIn') && $session->get('isLoggedIn') === true) {
             $userData = [
-                'name' => $session->get('FirstName'),
-                'lastname' => $session->get('LastName'),
-                'number' => $session->get('MobileNumber'),
-                'email' => $session->get('Email'),
+                'userId' => $session->get('UserID'),
+                'name' => $user['FirstName'],
+                'lastname' => $user['LastName'],
+                'number' => $user['MobileNumber'],
+                'email' => $user['Email'],
+                'password' => $user['Password'],
+                'profile' => $user['Image']
             ];
+
+            // print_r($userData);
             if ($userData) {
                 return view('/pages/profile', ['userData' => $userData]);
             } else {
@@ -57,17 +68,17 @@ class Home extends BaseController
         } else {
             return redirect()->to('/');
         }
-    } 
+    }
 
     //data store in db---------
     public function storeData()
     {
         date_default_timezone_set('Asia/Kolkata');
-        $currentDateTime = date("Y/m/d/h:i:sa"); 
-        $session = session(); 
+        $currentDateTime = date("Y/m/d/h:i:sa");
+        $session = session();
         $token = uniqid();
-        $session->set('token', $token); 
-        $userModel = new UserModel(); 
+        $session->set('token', $token);
+        $userModel = new UserModel();
         $userData = [
             'FirstName' => $this->request->getPost('name'),
             'LastName' => $this->request->getPost('lastname'),
@@ -78,6 +89,7 @@ class Home extends BaseController
             'Token' => $token,
             'date_time' => $currentDateTime,
         ];
+
         $userEmail = $this->request->getPost('email');
         $session->set('userEmail', $userEmail);
 
@@ -112,8 +124,8 @@ class Home extends BaseController
     //authendicate user---------
 
     public function loginAuth()
-    { 
-        $session = session();  
+    {
+        $session = session();
         $userModel = new UserModel();
         $email = $this->request->getPost('email');
         $password = $this->request->getPost('password');
@@ -140,6 +152,7 @@ class Home extends BaseController
                 $authenticatePassword = password_verify($password, $pass);
                 if ($authenticatePassword) {
                     $ses_data = [
+                        'UserID' => $data['UserID'],
                         'FirstName' => $data['FirstName'],
                         'LastName' => $data['LastName'],
                         'MobileNumber' => $data['MobileNumber'],
@@ -191,5 +204,51 @@ class Home extends BaseController
 
         }
     }
+
+    public function updateProfile()
+    {
+        $userModel = new UserModel();
+        date_default_timezone_set('Asia/Kolkata');
+        $currentDateTime = date("Y/m/d/h:i:sa");
+        $userData = [
+            'userID' => $this->request->getPost('userId'),
+            'updatedName' => $this->request->getPost('name'),
+            'updatedLastName' => $this->request->getPost('lastname'),
+            'updatedMobileNumber' => $this->request->getPost('number'),
+            'updatedEmail' => $this->request->getPost('email'),
+            // 'updatedProfileImage' => $this->request->getFile('profileImage'),
+            // 'updatedPassword' => $this->request->getPost('password'),
+            'date_time' => $currentDateTime,
+        ];
+        // print_r($userData);
+        // exit;
+        $user = $userModel->where('UserID', $userData['userID'])->first();
+
+        $profileImage = $this->request->getFile('profileImage');
+
+        if ($user) {
+            $newName = '';
+            if ($profileImage->isValid() && !$profileImage->hasMoved()) {
+                $newName = $profileImage->getRandomName();
+                $profileImage->move(ROOTPATH . 'public/uploads', $newName);
+            }
+
+            $updateData = [
+                'FirstName' => $userData['updatedName'],
+                'LastName' => $userData['updatedLastName'],
+                'MobileNumber' => $userData['updatedMobileNumber'],
+                'Email' => $userData['updatedEmail'],
+                'Image' => $newName,
+                // 'Password' => $userData['updatedPassword'],
+                'date_time' => $currentDateTime,
+            ];
+
+
+            $userModel->update($userData['userID'], $updateData);
+            return redirect()->back()->with('status', 'Profile updated successfully');
+        } else {
+            return redirect()->back()->with('status', 'Something went wrong');
+        }
+    } 
 
 }

@@ -16,6 +16,7 @@ class UserModel extends Model
         'Token',
         'Verified',
         'date_time',
+        'Image'
     ];
     // public function saveToken($data)
     // { 
